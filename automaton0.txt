@@ -1,0 +1,16 @@
+objectType> if type==state: isResponse 
+objectType> if type==link : origin:target:nextValue= //later we will need counters values
+state>0
+state>0
+state>0
+state>1
+link >0:1:A
+link >0:2:B
+link >0:3:C
+link >1:1:A
+link >1:2:B
+link >1:3:C
+link >2:1:A
+link >2:2:B
+link >2:3:C
+link >3:3:C

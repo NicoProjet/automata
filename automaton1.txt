@@ -1,0 +1,18 @@
+objectType> if type==state: isResponse 
+objectType> if type==link : origin:target:nextValue
+FILE_SEPARATOR :
+NUMBER_OF_COUNTERS 2
+state>0
+state>0
+state>0
+state>1
+link >0:1:A:0:0
+link >0:2:B:0:0
+link >0:3:C:0:0
+link >1:1:A:0:0
+link >1:2:B:0:0
+link >1:3:C:0:0
+link >2:1:A:0:0
+link >2:2:B:0:0
+link >2:3:C:0:0
+link >3:3:C:0:0
