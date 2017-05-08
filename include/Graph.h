@@ -28,7 +28,7 @@ class Graph
                 static std::size_t numberOfStates;
                 std::size_t _id = numberOfStates++;
             public:
-                Node();
+                Node(){};
                 Node(bool isResponse): _isResponse(isResponse){};
                 ~Node();
 
@@ -86,7 +86,7 @@ class Graph
         };
 
     public:
-        Graph();
+        Graph(){};
         Graph(std::string fileName);
         ~Graph();
 

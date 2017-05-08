@@ -6,10 +6,6 @@
 ++++++++++++++++++++++++++++++++++++++++++++++++
 */
 std::size_t Graph::Node::numberOfStates = 0;
-Graph::Graph()
-{
-    //ctor
-}
 
 Graph::Graph(std::string fileName)
 {
@@ -108,7 +104,6 @@ Graph::Graph(std::string fileName)
                         break;
                     case 2:
                         value = toupper(valuesInLine.substr(valueBegin,valueEnd-valueBegin)[0]);
-                        std::cout << value << std::endl;
                         break;
                     default:
                         counters[counterIndex] = std::stoi(valuesInLine.substr(valueBegin,valueEnd-valueBegin));
@@ -124,7 +119,6 @@ Graph::Graph(std::string fileName)
             newEdge = new Edge(origin, target, value);
             for (int i=0;i<NUMBER_OF_COUNTERS;i++)
             {
-                std::cout << "counter" << i << " == " << counters[i] << "   changed by " << countersChanges[i] << std::endl;
                 newEdge->addCounter(counters[i]);
                 newEdge->addCounterChange(countersChanges[i]);
             }
@@ -239,9 +233,9 @@ int Graph::wordEntryWithCounters(std::string word)
         // 1) find the right link
         letter = toupper(letter);
         actualEdge = actualNode->getFirstEdge();
-        while (actualEdge!=nullptr // no more edges
-               && (actualEdge->getValue()!=letter && actualEdge->getValue()!='-') // wrong value
-               && !(actualEdge->checkCounters(counters))) // wrong counters
+        while ((actualEdge!=nullptr // no more edges
+               && (actualEdge->getValue()!=letter && actualEdge->getValue()!='-')) // wrong value
+               || !(actualEdge->checkCounters(counters))) // wrong counters
         {
             actualEdge = actualEdge->getNext();
         }
@@ -268,12 +262,6 @@ int Graph::wordEntryWithCounters(std::string word)
 +++++++++++      Classe Node     +++++++++++++++
 ++++++++++++++++++++++++++++++++++++++++++++++++
 */
-
-Graph::Node::Node()
-{
-    //ctor
-}
-
 
 Graph::Node::~Node()
 {
@@ -313,23 +301,14 @@ Graph::Edge::~Edge()
 
 int Graph::Edge::checkCounters(int counters[])
 {
-    std::cout << "counters: ";
-    for (int index = 0; index < _counters.size() ; index++){std::cout << counters[index];}
-    std::cout << std::endl;
-    std::cout << "_counters: ";
-    for (int counter : _counters){std::cout << counter;}
-    std::cout << std::endl;
-    std::cout << "start checking   ";
     int response = 1, index = 0, countersSize = _counters.size();
     while (index<countersSize && response)
     {
         if (!(_counters[index]==-1))
         {
-            std::cout << counters[index] << " == " << _counters[index] << "    ";
             response = (counters[index] == _counters[index]);
         }
         index++;
     }
-    std::cout << std::endl;
     return response;
 }
