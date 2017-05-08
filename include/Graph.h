@@ -2,15 +2,11 @@
 #define GRAPH_H
 #define SUCCESS 1
 #define FAILURE 0
-#define HEAD_SIZE 2
-#define LINE_BEGIN_SIZE 6
-#define FILE_SEPARATOR ":"
 #include "Graph.h"
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
-
 
 
 class Graph
@@ -20,6 +16,7 @@ class Graph
         class Edge;
 
         Node *_head = nullptr;
+        int NUMBER_OF_COUNTERS;
 
         class Node
         {
@@ -60,9 +57,12 @@ class Graph
                 Edge *_next = nullptr;
                 // constraints
                 char _value;
+                bool _ignoredValue = 0;
+                std::vector<int> _counters, _countersChanges;
             public:
-                Edge();
-                Edge(Node* origin, Node* target, char value): _origin(origin), _target(target), _value(value) {};
+                Edge(){};
+                Edge(Node* origin, Node* target, char value): _origin(origin), _target(target), _value(value), _ignoredValue(value=='-') {};
+
                 ~Edge();
 
                 // getters/setters
@@ -74,6 +74,15 @@ class Graph
                 void setNext(Edge *edge){_next=edge;}
                 char getValue(){return _value;}
                 void setValue(char value){_value = value;}
+                int getCounter(int index){return _counters[index];}
+                void setCounter(int index, int value){_counters[index] = value;}
+                void addCounter(int value){_counters.push_back(value);}
+                int getCounterChange(int index){return _countersChanges[index];}
+                void setCounterChange(int index, int value){_countersChanges[index] = value;}
+                void addCounterChange(int value){_countersChanges.push_back(value);}
+                bool getIgnoredValue(){return _ignoredValue;}
+                void setIgnoredValue(bool value){_ignoredValue = value;}
+                int checkCounters(int counters[]);
         };
 
     public:
@@ -86,6 +95,7 @@ class Graph
         static Graph* readFile(std::string fileName);
         void uglyPrint();
         int wordEntry(std::string word);
+        int wordEntryWithCounters(std::string word);
 };
 
 

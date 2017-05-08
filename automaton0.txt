@@ -1,5 +1,10 @@
-objectType> if type==state: isResponse 
-objectType> if type==link : origin:target:nextValue= //later we will need counters values
+HEAD_SIZE 7
+NUMBER_OF_COUNTERS 0
+LINE_BEGIN_SIZE 6
+FILE_SEPARATOR :
+objectType> if type==state: isResponse
+objectType> if type==link : origin:target:nextValue
+Cet automate accepte tous les mots contenant c (alphabet = {a,b,c})
 state>0
 state>0
 state>0
@@ -13,4 +18,4 @@ link >1:3:C
 link >2:1:A
 link >2:2:B
 link >2:3:C
-link >3:3:C
+link >3:3:-

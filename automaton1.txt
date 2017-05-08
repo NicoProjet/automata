@@ -1,12 +1,14 @@
-objectType> if type==state: isResponse 
-objectType> if type==link : origin:target:nextValue
+HEAD_SIZE 6
+NUMBER_OF_COUNTERS 1
+LINE_BEGIN_SIZE 6
 FILE_SEPARATOR :
-NUMBER_OF_COUNTERS 2
+objectType> if type==state: isResponse
+objectType> if type==link : origin:target:nextValue:counter0:counter1:... (ignored counter = -1, ignored value = '-')
 state>0
 state>0
 state>0
 state>1
-link >0:1:A:0:0
+link >0:1:A:-1:0
 link >0:2:B:0:0
 link >0:3:C:0:0
 link >1:1:A:0:0

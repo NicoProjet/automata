@@ -23,3 +23,17 @@
 	<fstream>
 	<iostream>
 
+1494273883 source:d:\projets\c++\automata\main.cpp
+	<iostream>
+	"Graph.h"
+
+1494270561 d:\projets\c++\automata\include\graph.h
+	"Graph.h"
+	<vector>
+	<string>
+	<fstream>
+	<iostream>
+
+1494282277 source:d:\projets\c++\automata\src\graph.cpp
+	"Graph.h"
+
