@@ -233,25 +233,30 @@ int Graph::wordEntryWithCounters(std::string word)
         // 1) find the right link
         letter = toupper(letter);
         actualEdge = actualNode->getFirstEdge();
+        /*
+        // BUG caused by -> no short-circuit after actualEdge!=nullptr because there is a || in condition
         while ((actualEdge!=nullptr // no more edges
-               && (actualEdge->getValue()!=letter && actualEdge->getValue()!='-')) // wrong value
+               && actualEdge->getValue()!=letter && actualEdge->getValue()!='-') // wrong value && not ignored
                || !(actualEdge->checkCounters(counters))) // wrong counters
         {
             actualEdge = actualEdge->getNext();
         }
-
-        // 2) go to next node and update counters
-        if (actualEdge == nullptr)
+        */
+        if(actualEdge!=nullptr)
         {
-            return actualNode->getIsResponse();
-        }
-        else
-        {
-            actualNode = actualEdge->getTarget();
-            for (int i = 0; i < NUMBER_OF_COUNTERS; i++)
+            while ((actualEdge->getValue()!=letter && !actualEdge->getIgnoredValue()) // wrong value && not ignored
+                   || !(actualEdge->checkCounters(counters))) // wrong counters
             {
-                counters[i] = counters[i] + actualEdge->getCounterChange(i);
+                actualEdge = actualEdge->getNext();
+                if(actualEdge==nullptr){return actualNode->getIsResponse();}
             }
+        }
+        // 2) go to next node and update counters
+        else{return actualNode->getIsResponse();}
+        actualNode = actualEdge->getTarget();
+        for (int i = 0; i < NUMBER_OF_COUNTERS; i++)
+        {
+            counters[i] = counters[i] + actualEdge->getCounterChange(i);
         }
     }
     return actualNode->getIsResponse();
