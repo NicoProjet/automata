@@ -129,9 +129,14 @@ Graph::Graph(std::string fileName)
 
 Graph::~Graph()
 {
-    // TO DO
-    // read all nodes and delete them
-    // read all links and delete them (should be inserted in node dtor)
+    Node *actualNode = _head;
+    Node *nextNode = nullptr;
+    while (actualNode != nullptr)
+    {
+        nextNode = actualNode->getNext();
+        delete(actualNode);
+        actualNode = nextNode;
+    }
 }
 
 int Graph::addNode(Node* node) // tested
@@ -270,7 +275,19 @@ int Graph::wordEntryWithCounters(std::string word)
 
 Graph::Node::~Node()
 {
-    //dtor
+    // call edges destructors
+    Edge *actualEdge = getFirstEdge();
+    Edge *nextEdge = nullptr;
+    while (actualEdge != nullptr)
+    {
+        nextEdge = actualEdge->getNext();
+        delete(actualEdge);
+        actualEdge = nextEdge;
+    }
+    // delete pointers
+    delete(_next);
+    delete(_previous);
+    delete(_firstEdge);
 }
 
 int Graph::Node::addEdge(Edge* edge)
@@ -301,7 +318,9 @@ int Graph::Node::addEdge(Edge* edge)
 
 Graph::Edge::~Edge()
 {
-    //dtor
+    delete(_origin);
+    delete(_target);
+    delete(_next);
 }
 
 int Graph::Edge::checkCounters(int counters[])
