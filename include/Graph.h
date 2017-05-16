@@ -59,6 +59,8 @@ class Graph
                 char _value;
                 bool _ignoredValue = 0;
                 std::vector<int> _counters, _countersChanges;
+                std::vector<std::string> _countersOperators;
+
             public:
                 Edge(){};
                 Edge(Node* origin, Node* target, char value): _origin(origin), _target(target), _value(value), _ignoredValue(value=='-') {};
@@ -80,6 +82,8 @@ class Graph
                 int getCounterChange(int index){return _countersChanges[index];}
                 void setCounterChange(int index, int value){_countersChanges[index] = value;}
                 void addCounterChange(int value){_countersChanges.push_back(value);}
+                void addCounterOperator(std::string op){_countersOperators.push_back(op);}
+                void addCounter(std::string op, int counterValue, int counterChange);
                 bool getIgnoredValue(){return _ignoredValue;}
                 void setIgnoredValue(bool value){_ignoredValue = value;}
                 int checkCounters(int counters[]);
@@ -96,6 +100,7 @@ class Graph
         void uglyPrint();
         int wordEntry(std::string word);
         int wordEntryWithCounters(std::string word);
+        bool voidTest();
 };
 
 

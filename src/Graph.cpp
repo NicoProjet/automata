@@ -78,6 +78,7 @@ Graph::Graph(std::string fileName)
     // read graph in file
     int counters[NUMBER_OF_COUNTERS];
     int countersChanges[NUMBER_OF_COUNTERS];
+    std::string countersOperators[NUMBER_OF_COUNTERS];
     int counterIndex;
     for (int i=0;i<HEAD_SIZE;i++){std::getline(file,line);}
     while (std::getline(file,line))
@@ -94,7 +95,7 @@ Graph::Graph(std::string fileName)
             valuesInLine = line.substr(LINE_BEGIN_SIZE,std::string::npos);
             valueBegin = 0;
             valueEnd = 0;
-            while (valueEnd != std::string::npos && counterIndex <= NUMBER_OF_COUNTERS)
+            while (valueEnd != std::string::npos && counterIndex < NUMBER_OF_COUNTERS)
             {
                 valueEnd = valuesInLine.find_first_of(FILE_SEPARATOR, valueEnd);
                 switch(counter)
@@ -119,7 +120,15 @@ Graph::Graph(std::string fileName)
                         value = toupper(valuesInLine.substr(valueBegin,valueEnd-valueBegin)[0]);
                         break;
                     default:
+                        // get counter comparaison operator
+                        countersOperators[counterIndex] = valuesInLine.substr(valueBegin,valueEnd-valueBegin);
+
+                        // get counter value
+                        valueBegin = ++valueEnd;
+                        valueEnd = valuesInLine.find_first_of(FILE_SEPARATOR, valueEnd);
                         counters[counterIndex] = std::stoi(valuesInLine.substr(valueBegin,valueEnd-valueBegin));
+
+                        //get counter change
                         valueBegin = ++valueEnd;
                         valueEnd = valuesInLine.find_first_of(FILE_SEPARATOR, valueEnd);
                         countersChanges[counterIndex] = std::stoi(valuesInLine.substr(valueBegin,valueEnd-valueBegin));
@@ -171,30 +180,6 @@ int Graph::addNode(Node* node) // tested
         return SUCCESS;
     }
 }
-
-/*
-// dangerous because of the return of a pointer created dynamically
-// => created a constructor with fileName as parameter
-Graph* Graph::readFile(std::string fileName)
-{
-    Graph* newGraphPtr = new Graph();
-    std::ifstream file(fileName);
-    std::string line;
-    for (int i=0;i<HEAD_SIZE;i++){file >> line;}
-    while (file >> line)
-    {
-        if (line.substr(0,LINE_BEGIN_SIZE)=="state>")
-        {
-            //newGraphPtr->addNode(std::stoi(line.substr(LINE_BEGIN_SIZE,1)));
-        }
-        else
-        {
-            //
-        }
-    }
-    return newGraphPtr;
-}
-*/
 
 void Graph::uglyPrint()
 {
@@ -280,6 +265,13 @@ int Graph::wordEntryWithCounters(std::string word)
     return actualNode->getIsResponse();
 }
 
+bool Graph::voidTest()
+{
+    //
+}
+
+
+
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++
 +++++++++++      Classe Node     +++++++++++++++
@@ -336,6 +328,13 @@ Graph::Edge::~Edge()
     delete(_next);
 }
 
+void Graph::Edge::addCounter(std::string op, int counterValue, int counterChange)
+{
+    addCounterOperator(op);
+    addCounter(counterValue);
+    addCounterChange(counterChange);
+}
+
 int Graph::Edge::checkCounters(int counters[])
 {
     int response = 1, index = 0, countersSize = _counters.size();
@@ -343,7 +342,18 @@ int Graph::Edge::checkCounters(int counters[])
     {
         if (!(_counters[index]==-1))
         {
-            response = (counters[index] == _counters[index]);
+            if(_countersOperators[index] == "=")
+            {
+                response = (counters[index] == _counters[index]);
+            }
+            else if(_countersOperators[index] == "<")
+            {
+                response = (counters[index] < _counters[index]);
+            }
+            else if(_countersOperators[index] == ">")
+            {
+                response = (counters[index] > _counters[index]);
+            }
         }
         index++;
     }
