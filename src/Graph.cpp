@@ -1,8 +1,5 @@
 /*
 TO DO LIST:
-add < and > tests on counters  ---> DONE
-add reversal bounded constraint ---> DONE
-TESTING BOTH < > tests and bound
 find maximum size of words (theorical boundary (c.s)^R if i remember correctly)
     c = #counters  |  s = #states  |  R = # of reversal (counters)
 add begin->end algorithm for void test
