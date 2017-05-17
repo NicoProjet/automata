@@ -3,10 +3,8 @@
 
 int main()
 {
-
     // Tests ctor from file
     // automaton0.txt accepte tous les mots qui finissent pas C (alphabet = {A,B,C})
-
     Graph newGraph("automaton2.txt");
     newGraph.uglyPrint();
 
@@ -23,3 +21,4 @@ int main()
 
     return 0;
 }
+

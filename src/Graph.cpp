@@ -1,7 +1,8 @@
 /*
 TO DO LIST:
-add < and > tests on counters
-add reversal bounded constraint
+add < and > tests on counters  ---> DONE
+add reversal bounded constraint ---> DONE
+TESTING BOTH < > tests and bound
 find maximum size of words (theorical boundary (c.s)^R if i remember correctly)
     c = #counters  |  s = #states  |  R = # of reversal (counters)
 add begin->end algorithm for void test
@@ -28,25 +29,28 @@ Graph::Graph(std::string fileName)
     Node *newNode, *origin, *target;
     Edge *newEdge;
     std::size_t valueBegin, valueEnd;
-    int counter = 0, HEAD_SIZE, LINE_BEGIN_SIZE, intValue;
+    int counter = 0, HEADER_SIZE, LINE_BEGIN_SIZE, intValue;
 
     // open file
     std::ifstream file(fileName);
     std::string line, valuesInLine;
 
-    // find variables for parsing
+    // find const variables in file
     // default values
-    HEAD_SIZE = 0;
+    HEADER_SIZE = 0;
     NUMBER_OF_COUNTERS = 0;
+    REVERSAL_BOUND = -1;
     LINE_BEGIN_SIZE = 6;
     FILE_SEPARATOR = ':';
+
+    // real values
     file >> word;
     do
     {
-        if (word == "HEAD_SIZE")
+        if (word == "HEADER_SIZE")
         {
             file >> intValue;
-            HEAD_SIZE = intValue;
+            HEADER_SIZE = intValue;
         }
         else if (word == "NUMBER_OF_COUNTERS")
         {
@@ -63,24 +67,31 @@ Graph::Graph(std::string fileName)
             file >> value;
             FILE_SEPARATOR = value;
         }
+        else if (word == "REVERSAL_BOUND")
+        {
+            file >> intValue;
+            REVERSAL_BOUND = intValue;
+        }
         counter++;
-    } while (file >> word && counter < HEAD_SIZE);
-    // reset streampose and counter
+    } while (file >> word && counter < HEADER_SIZE);
+
+    // reset streampos and counter
     file.clear();
     file.seekg( 0 );
     counter = 0;
 
-    std::cout << "HEAD_SIZE= " << HEAD_SIZE << std::endl;
-    std::cout << "NUMBER_OF_COUNTERS= " << NUMBER_OF_COUNTERS << std::endl;
-    std::cout << "LINE_BEGIN_SIZE= " << LINE_BEGIN_SIZE << std::endl;
-    std::cout << "FILE_SEPARATOR= " << FILE_SEPARATOR << std::endl;
+    std::cout << "HEADER_SIZE = " << HEADER_SIZE << std::endl;
+    std::cout << "NUMBER_OF_COUNTERS = " << NUMBER_OF_COUNTERS << std::endl;
+    std::cout << "REVERSAL_BOUND = " << REVERSAL_BOUND << std::endl;
+    std::cout << "LINE_BEGIN_SIZE = " << LINE_BEGIN_SIZE << std::endl;
+    std::cout << "FILE_SEPARATOR = " << FILE_SEPARATOR << std::endl;
 
-    // read graph in file
+    // read and construct graph from file
     int counters[NUMBER_OF_COUNTERS];
     int countersChanges[NUMBER_OF_COUNTERS];
     std::string countersOperators[NUMBER_OF_COUNTERS];
     int counterIndex;
-    for (int i=0;i<HEAD_SIZE;i++){std::getline(file,line);}
+    for (int i=0;i<HEADER_SIZE;i++){std::getline(file,line);}
     while (std::getline(file,line))
     {
         if (line.substr(0,LINE_BEGIN_SIZE)=="state>")
@@ -141,8 +152,7 @@ Graph::Graph(std::string fileName)
             newEdge = new Edge(origin, target, value);
             for (int i=0;i<NUMBER_OF_COUNTERS;i++)
             {
-                newEdge->addCounter(counters[i]);
-                newEdge->addCounterChange(countersChanges[i]);
+                newEdge->addCounter(countersOperators[i], counters[i], countersChanges[i]);
             }
             origin->addEdge(newEdge);
         }
@@ -227,9 +237,11 @@ int Graph::wordEntry(std::string word)
 
 int Graph::wordEntryWithCounters(std::string word)
 {
-    Node* actualNode = _head;
-    Edge* actualEdge;
+    Node *actualNode = _head, *lastNode = nullptr;
+    Edge *actualEdge;
+    int numberOfReversals = 0;  // number of times we go from INC to DEC or the other way around
     int counters[NUMBER_OF_COUNTERS] = {0};
+    int lastReversals[NUMBER_OF_COUNTERS] = {0}; // save last operations on counters
     if (actualNode == nullptr) {return FAILURE;}
     for (char letter : word)
     {
@@ -256,10 +268,12 @@ int Graph::wordEntryWithCounters(std::string word)
         }
         // 2) go to next node and update counters
         else{return actualNode->getIsResponse();}
+        lastNode = actualNode;
         actualNode = actualEdge->getTarget();
-        for (int i = 0; i < NUMBER_OF_COUNTERS; i++)
+        numberOfReversals += actualEdge->updateCounters(counters, lastReversals);
+        if (REVERSAL_BOUND != -1  &&  numberOfReversals > REVERSAL_BOUND)
         {
-            counters[i] = counters[i] + actualEdge->getCounterChange(i);
+            return lastNode->getIsResponse();
         }
     }
     return actualNode->getIsResponse();
@@ -337,25 +351,86 @@ void Graph::Edge::addCounter(std::string op, int counterValue, int counterChange
 
 int Graph::Edge::checkCounters(int counters[])
 {
+    std::cout << "checkCounters begin" << std::endl;
     int response = 1, index = 0, countersSize = _counters.size();
     while (index<countersSize && response)
     {
-        if (!(_counters[index]==-1))
+        if (!(_counters[index ]== -1))
         {
             if(_countersOperators[index] == "=")
             {
+                std::cout << "testing: "<<counters[index]<<" == "<<_counters[index]<<std::endl;
                 response = (counters[index] == _counters[index]);
             }
             else if(_countersOperators[index] == "<")
             {
+                std::cout << "testing: "<<counters[index]<<" < "<<_counters[index]<<std::endl;
                 response = (counters[index] < _counters[index]);
             }
             else if(_countersOperators[index] == ">")
             {
+                std::cout << "testing: "<<counters[index]<<" > "<<_counters[index]<<std::endl;
                 response = (counters[index] > _counters[index]);
             }
         }
         index++;
     }
+    std::cout << "checkCounters end, response = "<< response<< "\n\n" << std::endl;
     return response;
+}
+
+int Graph::Edge::updateCounters(int counters[], int lastReversals[])
+{
+    std::cout << "updateCounters begin counters = ";
+    for (int i = 0; i<2; i++)
+    {
+        std::cout << counters[i] << " | ";
+    }
+    std::cout << std::endl;
+    int numberOfReversals = 0, lastCounterValue = 0;
+    for (size_t index = 0; index < _counters.size(); index++)
+    {
+        std::cout << "counter test " << _counters[index] << " == "<<-1<<std::endl;
+        if (!(_countersChanges[index] == -1))
+        {
+            lastCounterValue = counters[index];
+            std::cout << "counter = "<<counters[index]<<"    | ";
+            counters[index] = counters[index] + _countersChanges[index];
+            std::cout << "after counter = "<<counters[index]<<std::endl;
+            if (lastReversals[index] > 0) // last op was INC
+            {
+                if (lastCounterValue > counters[index]) // we used DEC
+                {
+                    numberOfReversals++;
+                    lastReversals[index] = -1;
+                }
+            }
+            else if (lastReversals[index] < 0) // last op was DEC
+            {
+                if (lastCounterValue < counters[index]) // we used INC
+                {
+                    numberOfReversals++;
+                    lastReversals[index] = 1;
+                }
+            }
+            else // first time we touch the counter
+            {
+                if (lastCounterValue > counters[index]) // we used DEC
+                {
+                    lastReversals[index] = -1;
+                }
+                else // we used INC
+                {
+                    lastReversals[index] = 1;
+                }
+            }
+        }
+    }
+    std::cout << "updateCounters end counters = ";
+    for (int i = 0; i<2; i++)
+    {
+        std::cout << counters[i] << " | ";
+    }
+    std::cout << "\n\n" <<std::endl;
+    return numberOfReversals;
 }

@@ -16,7 +16,7 @@ class Graph
         class Edge;
 
         Node *_head = nullptr;
-        int NUMBER_OF_COUNTERS;
+        int NUMBER_OF_COUNTERS, REVERSAL_BOUND;
 
         class Node
         {
@@ -87,6 +87,7 @@ class Graph
                 bool getIgnoredValue(){return _ignoredValue;}
                 void setIgnoredValue(bool value){_ignoredValue = value;}
                 int checkCounters(int counters[]);
+                int updateCounters(int counters[], int lastReversals[]);
         };
 
     public:
