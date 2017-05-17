@@ -351,6 +351,7 @@ void Graph::Edge::addCounter(std::string op, int counterValue, int counterChange
 
 int Graph::Edge::checkCounters(int counters[])
 {
+    std::cout << "checkCounters begin" << std::endl;
     int response = 1, index = 0, countersSize = _counters.size();
     while (index<countersSize && response)
     {
@@ -358,31 +359,44 @@ int Graph::Edge::checkCounters(int counters[])
         {
             if(_countersOperators[index] == "=")
             {
+                std::cout << "testing: "<<counters[index]<<" == "<<_counters[index]<<std::endl;
                 response = (counters[index] == _counters[index]);
             }
             else if(_countersOperators[index] == "<")
             {
+                std::cout << "testing: "<<counters[index]<<" < "<<_counters[index]<<std::endl;
                 response = (counters[index] < _counters[index]);
             }
             else if(_countersOperators[index] == ">")
             {
+                std::cout << "testing: "<<counters[index]<<" > "<<_counters[index]<<std::endl;
                 response = (counters[index] > _counters[index]);
             }
         }
         index++;
     }
+    std::cout << "checkCounters end, response = "<< response<< "\n\n" << std::endl;
     return response;
 }
 
 int Graph::Edge::updateCounters(int counters[], int lastReversals[])
 {
+    std::cout << "updateCounters begin counters = ";
+    for (int i = 0; i<2; i++)
+    {
+        std::cout << counters[i] << " | ";
+    }
+    std::cout << std::endl;
     int numberOfReversals = 0, lastCounterValue = 0;
     for (size_t index = 0; index < _counters.size(); index++)
     {
+        std::cout << "counter test " << _counters[index] << " == "<<-1<<std::endl;
         if (!(_countersChanges[index] == -1))
         {
             lastCounterValue = counters[index];
+            std::cout << "counter = "<<counters[index]<<"    | ";
             counters[index] = counters[index] + _countersChanges[index];
+            std::cout << "after counter = "<<counters[index]<<std::endl;
             if (lastReversals[index] > 0) // last op was INC
             {
                 if (lastCounterValue > counters[index]) // we used DEC
@@ -412,5 +426,11 @@ int Graph::Edge::updateCounters(int counters[], int lastReversals[])
             }
         }
     }
+    std::cout << "updateCounters end counters = ";
+    for (int i = 0; i<2; i++)
+    {
+        std::cout << counters[i] << " | ";
+    }
+    std::cout << "\n\n" <<std::endl;
     return numberOfReversals;
 }
