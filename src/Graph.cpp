@@ -4,7 +4,7 @@ find maximum size of words (theorical boundary (c.s)^R if i remember correctly)
     c = #counters  |  s = #states  |  R = # of reversal (counters)
 add begin->end algorithm for void test
     recursively build a graph (state, counters[]) (Filiot's proposition)
-    (i was thinking about sending the tuple as parameter without creating graph
+    (i was thinking about sending the tuple as parameter without creating graph)
      Breadth First Search or/and Depth First Search
 add end->begin algorithm
 try combine both ->  <- find a common node in algorithms
