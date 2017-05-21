@@ -342,10 +342,10 @@ bool Graph::voidTest(int type)
 {
     switch(type)
     {
-        case DEPTH_FIRST: return voidTestFullDFS();
-        case BREADTH_FIRST: return voidTestFullBFS();
-        case DEPTH_FIRST_FROM_END: return voidTestFromEnd(DEPTH_FIRST);
-        case BREADTH_FIRST_FROM_END: return voidTestFromEnd(BREADTH_FIRST);
+        case DEPTH_FIRST: return voidTestFullDFS(); break;
+        case BREADTH_FIRST: return voidTestFullBFS(); break;
+        case DEPTH_FIRST_FROM_END: return voidTestFromEnd(DEPTH_FIRST); break;
+        case BREADTH_FIRST_FROM_END: return voidTestFromEnd(BREADTH_FIRST); break;
     }
 }
 
