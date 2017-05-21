@@ -15,6 +15,7 @@ try combine both ->  <- find a common node in algorithms
 ++++++++++++++++++++++++++++++++++++++++++++++++
 */
 std::size_t Graph::Node::numberOfStates = 0;
+std::size_t Graph::Edge::numberOfLinks = 0;
 
 Graph::Graph(std::string fileName)
 {
@@ -181,12 +182,14 @@ Graph::Graph(Graph *g)
     Node *origin, *target;
     std::stack<Node*> nodeStack;
     std::stack<Edge*> edgeStack;
+    int numberOfLinks;
     // invert edges
     while (actualNode != nullptr)
     {
         Edge *actualEdge = actualNode->getFirstEdge();
         while (actualEdge != nullptr)
         {
+            numberOfLinks++;
             target = actualEdge->getTarget();
             origin = actualEdge->getOrigin();
             actualEdge->setTarget(origin);
@@ -211,6 +214,7 @@ Graph::Graph(Graph *g)
         addNode(nodeStack.top());
         nodeStack.pop();
     }
+    VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
 }
 
 Graph::~Graph()
@@ -392,6 +396,7 @@ bool Graph::voidTestLoopDFS(Node *actualNode, int counters[], int numberOfRevers
 
 bool Graph::voidTestFullDFS()
 {
+    std::cout << "test" << std::endl;
     bool response = false;
     std::string word = "";
     std::stack<std::string> s;
@@ -441,14 +446,58 @@ bool Graph::voidTestFullBFS()
 
 bool Graph::voidTestFromEnd(int type)
 {
-    Graph newGraph = invertGraph();
-    return newGraph.voidTest(type);
+    invertGraph();
+    return voidTest(type);
 }
 
-Graph Graph::invertGraph()
+Graph Graph::makeInvertGraph()
 {
     Graph newGraph(this);
     return newGraph;
+}
+
+void Graph::invertGraph()
+{
+    Node *actualNode = _head;
+    Node *previousNode = nullptr;
+    Node *origin, *target;
+    std::stack<Node*> nodeStack;
+    while (actualNode != nullptr)
+    {
+        Edge *previousEdge = nullptr;
+        Edge *actualEdge = actualNode->getFirstEdge();
+        actualNode->setFirstEdge(nullptr);
+        while (actualEdge != nullptr)
+        {
+            target = actualEdge->getTarget();
+            origin = actualEdge->getOrigin();
+            actualEdge->setTarget(origin);
+            actualEdge->setOrigin(target);
+            for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
+            origin->addEdge(actualEdge);
+            previousEdge = actualEdge;
+            actualEdge = actualEdge->getNext();
+            previousEdge->setNext(nullptr);
+        }
+        actualNode = actualNode->getNext();
+    }
+    // invert nodes
+    actualNode = _head;
+    actualNode->setIsResponse(true);
+    while (actualNode != nullptr)
+    {
+        nodeStack.push(actualNode);
+        previousNode = actualNode;
+        actualNode = actualNode->getNext();
+        previousNode->setNext(nullptr);
+    }
+    actualNode = nodeStack.top();
+    actualNode->setIsResponse(false);
+    while(!nodeStack.empty())
+    {
+        addNode(nodeStack.top());
+        nodeStack.pop();
+    }
 }
 
 
@@ -575,4 +624,11 @@ int Graph::Edge::updateCounters(int counters[], int lastReversals[])
         }
     }
     return numberOfReversals;
+}
+
+std::string Graph::Edge::toString()
+{
+    std::string str = "link >";
+    str += _id;
+    return str;
 }

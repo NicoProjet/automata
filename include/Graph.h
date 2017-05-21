@@ -65,6 +65,8 @@ class Graph
                 bool _ignoredValue = 0;
                 std::vector<int> _counters, _countersChanges;
                 std::vector<std::string> _countersOperators;
+                static std::size_t numberOfLinks;
+                std::size_t _id = numberOfLinks++;
 
             public:
                 Edge(){};
@@ -93,6 +95,8 @@ class Graph
                 void setIgnoredValue(bool value){_ignoredValue = value;}
                 int checkCounters(int counters[]);
                 int updateCounters(int counters[], int lastReversals[]);
+                std::string toString();
+                size_t getId(){return _id;}
         };
 
     public:
@@ -114,7 +118,8 @@ class Graph
         bool voidTestFullDFS();
         bool voidTestFullBFS();
         bool voidTestFromEnd(int type);
-        Graph invertGraph();
+        Graph makeInvertGraph();
+        void invertGraph();
 };
 
 
