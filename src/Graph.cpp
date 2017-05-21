@@ -1,7 +1,5 @@
 /*
 TO DO LIST:
-find maximum size of words (theorical boundary (c.s)^R if i remember correctly)
-    c = #counters  |  s = #states  |  R = # of reversal (counters)
 add begin->end algorithm for void test
     recursively build a graph (state, counters[]) (Filiot's proposition)
     (i was thinking about sending the tuple as parameter without creating graph)
@@ -40,6 +38,7 @@ Graph::Graph(std::string fileName)
     LINE_BEGIN_SIZE = 6;
     FILE_SEPARATOR = ':';
 
+
     // real values
     file >> word;
     do
@@ -69,6 +68,14 @@ Graph::Graph(std::string fileName)
             file >> intValue;
             REVERSAL_BOUND = intValue;
         }
+        else if (word == "ALPHABET")
+        {
+            while (file >> word && word != "END")
+            {
+                value = word[0];
+                ALPHABET.push_back(value);
+            }
+        }
         counter++;
     } while (file >> word && counter < HEADER_SIZE);
 
@@ -82,12 +89,18 @@ Graph::Graph(std::string fileName)
     std::cout << "REVERSAL_BOUND = " << REVERSAL_BOUND << std::endl;
     std::cout << "LINE_BEGIN_SIZE = " << LINE_BEGIN_SIZE << std::endl;
     std::cout << "FILE_SEPARATOR = " << FILE_SEPARATOR << std::endl;
+    std::cout << "ALPHABET = { ";
+    for (char letter : ALPHABET)
+    {
+        std::cout << letter << " ";
+    }
+    std::cout << "}" << std::endl;
 
     // read and construct graph from file
     int counters[NUMBER_OF_COUNTERS];
     int countersChanges[NUMBER_OF_COUNTERS];
     std::string countersOperators[NUMBER_OF_COUNTERS];
-    int counterIndex;
+    int counterIndex, numberOfLinks = 0, numberOfNodes = 0;
     for (int i=0;i<HEADER_SIZE;i++){std::getline(file,line);}
     while (std::getline(file,line))
     {
@@ -95,6 +108,7 @@ Graph::Graph(std::string fileName)
         {
             newNode = new Node(bool(std::stoi(line.substr(LINE_BEGIN_SIZE,1))));
             addNode(newNode);
+            numberOfNodes++;
         }
         else
         {
@@ -147,12 +161,55 @@ Graph::Graph(std::string fileName)
                 counter++;
             }
             newEdge = new Edge(origin, target, value);
+            numberOfLinks++;
             for (int i=0;i<NUMBER_OF_COUNTERS;i++)
             {
                 newEdge->addCounter(countersOperators[i], counters[i], countersChanges[i]);
             }
             origin->addEdge(newEdge);
         }
+    }
+    VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
+}
+
+Graph::Graph(Graph *g)
+{
+    NUMBER_OF_COUNTERS = g->NUMBER_OF_COUNTERS;
+    REVERSAL_BOUND = g->REVERSAL_BOUND;
+    ALPHABET = g->ALPHABET;
+    Node *actualNode = g->getHead();
+    Node *origin, *target;
+    std::stack<Node*> nodeStack;
+    std::stack<Edge*> edgeStack;
+    // invert edges
+    while (actualNode != nullptr)
+    {
+        Edge *actualEdge = actualNode->getFirstEdge();
+        while (actualEdge != nullptr)
+        {
+            target = actualEdge->getTarget();
+            origin = actualEdge->getOrigin();
+            actualEdge->setTarget(origin);
+            actualEdge->setOrigin(target);
+            for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
+            actualEdge = actualEdge->getNext();
+        }
+        actualNode = actualNode->getNext();
+    }
+    // invert nodes
+    actualNode = g->getHead();
+    actualNode->setIsResponse(true);
+    while (actualNode != nullptr)
+    {
+        nodeStack.push(actualNode);
+        actualNode=actualNode->getNext();
+    }
+    actualNode = nodeStack.top();
+    actualNode->setIsResponse(false);
+    while(!nodeStack.empty())
+    {
+        addNode(nodeStack.top());
+        nodeStack.pop();
     }
 }
 
@@ -163,12 +220,12 @@ Graph::~Graph()
     while (actualNode != nullptr)
     {
         nextNode = actualNode->getNext();
-        delete(actualNode);
+        delete actualNode;
         actualNode = nextNode;
     }
 }
 
-int Graph::addNode(Node* node) // tested
+int Graph::addNode(Node* node)
 {
     if (_head==nullptr)
     {
@@ -235,17 +292,23 @@ int Graph::wordEntry(std::string word)
 int Graph::wordEntryWithCounters(std::string word)
 {
     Node *actualNode = _head, *lastNode = nullptr;
-    Edge *actualEdge;
     int numberOfReversals = 0;  // number of times we go from INC to DEC or the other way around
     int counters[NUMBER_OF_COUNTERS] = {0};
     int lastReversals[NUMBER_OF_COUNTERS] = {0}; // save last operations on counters
     if (actualNode == nullptr) {return FAILURE;}
     for (char letter : word)
     {
-        // 1) find the right link
-        letter = toupper(letter);
-        actualEdge = actualNode->getFirstEdge();
-        /*
+        lastNode = actualNode;
+        actualNode = processNode(actualNode, letter, counters, numberOfReversals, lastReversals);
+        if ((actualNode == nullptr) || (REVERSAL_BOUND != -1  &&  numberOfReversals > REVERSAL_BOUND))
+        {
+            return lastNode->getIsResponse();
+        }
+    }
+    return actualNode->getIsResponse();
+}
+
+/*
         // BUG caused by -> no short-circuit after actualEdge!=nullptr because there is a || in condition
         while ((actualEdge!=nullptr // no more edges
                && actualEdge->getValue()!=letter && actualEdge->getValue()!='-') // wrong value && not ignored
@@ -254,32 +317,140 @@ int Graph::wordEntryWithCounters(std::string word)
             actualEdge = actualEdge->getNext();
         }
         */
-        if(actualEdge!=nullptr)
+Graph::Node* Graph::processNode(Node *actualNode, char letter, int counters[], int &numberOfReversals, int lastReversals[])
+{
+    // 1) find the right link
+    letter = toupper(letter);
+    Edge *actualEdge = actualNode->getFirstEdge();
+    if(actualEdge!=nullptr)
+    {
+        while ((actualEdge->getValue()!=letter && !actualEdge->getIgnoredValue()) // wrong value && not ignored
+                || !(actualEdge->checkCounters(counters))) // wrong counters
         {
-            while ((actualEdge->getValue()!=letter && !actualEdge->getIgnoredValue()) // wrong value && not ignored
-                   || !(actualEdge->checkCounters(counters))) // wrong counters
-            {
-                actualEdge = actualEdge->getNext();
-                if(actualEdge==nullptr){return actualNode->getIsResponse();}
-            }
-        }
-        // 2) go to next node and update counters
-        else{return actualNode->getIsResponse();}
-        lastNode = actualNode;
-        actualNode = actualEdge->getTarget();
-        numberOfReversals += actualEdge->updateCounters(counters, lastReversals);
-        if (REVERSAL_BOUND != -1  &&  numberOfReversals > REVERSAL_BOUND)
-        {
-            return lastNode->getIsResponse();
+            actualEdge = actualEdge->getNext();
+            if(actualEdge==nullptr){return nullptr;}
         }
     }
-    return actualNode->getIsResponse();
+    // 2) go to next node and update counters
+    else{return nullptr;}
+    actualNode = actualEdge->getTarget();
+    numberOfReversals += actualEdge->updateCounters(counters, lastReversals);
+    return actualNode;
 }
 
-bool Graph::voidTest()
+bool Graph::voidTest(int type)
 {
-    //
+    switch(type)
+    {
+        case DEPTH_FIRST: return voidTestFullDFS();
+        case BREADTH_FIRST: return voidTestFullBFS();
+        case DEPTH_FIRST_FROM_END: return voidTestFromEnd(DEPTH_FIRST);
+        case BREADTH_FIRST_FROM_END: return voidTestFromEnd(BREADTH_FIRST);
+    }
 }
+
+bool Graph::voidTestLoopDFS(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word)
+{
+    bool response = false;
+    if (word.size() < VOID_TEST_BOUND){
+        size_t index = 0;
+        while (index < ALPHABET.size() && !response)
+        {
+            // deepCopy counters state and word
+            int newCounters[NUMBER_OF_COUNTERS];
+            int newLastReversals[NUMBER_OF_COUNTERS];
+            for (int i = 0; i<NUMBER_OF_COUNTERS; i++)
+            {
+                newCounters[i] = counters[i];
+                newLastReversals[i] = lastReversals[i];
+            }
+            int newNumberOfReversals = numberOfReversals;
+            std::string newWord = word;
+
+            // find new state
+            newWord += ALPHABET[index];
+            Node *lastNode = actualNode;
+            Node *nextNode = processNode(actualNode, ALPHABET[index], newCounters, newNumberOfReversals, newLastReversals);
+            if ((actualNode == nullptr) || (REVERSAL_BOUND != -1  &&  newNumberOfReversals > REVERSAL_BOUND))
+            {
+                return lastNode->getIsResponse();
+            }
+            response = nextNode->getIsResponse();
+            if (!response)
+            {
+                response = voidTestLoopDFS(nextNode, newCounters, newNumberOfReversals, newLastReversals, newWord);
+            }
+            else
+            {
+                std::cout << "found accepted word: " << newWord << std::endl;
+            }
+            index++;
+        }
+    }
+    return response;
+}
+
+bool Graph::voidTestFullDFS()
+{
+    bool response = false;
+    std::string word = "";
+    std::stack<std::string> s;
+    s.push("");
+    do
+    {
+        word = s.top();
+        s.pop();
+        if (word.size() < VOID_TEST_BOUND)
+        {
+            for (int index = ALPHABET.size()-1; index >= 0; index--)
+            {
+                std::string newWord = word + ALPHABET[index];
+                s.push(newWord);
+            }
+        }
+        response = wordEntryWithCounters(word);
+        if (response){std::cout << "found accepted word: " << word << std::endl;}
+    } while (!response);
+    return response;
+}
+
+bool Graph::voidTestFullBFS()
+{
+    bool response = false;
+    std::string word = "";
+    std::queue<std::string> heap;
+    do
+    {
+        // 1) enfiler
+        for (char letter : ALPHABET)
+        {
+            std::string newWord = word + letter;
+            heap.push(newWord);
+        }
+
+        // 2) on sort le prochain mot
+        word = heap.front();
+        heap.pop();
+
+        // on parcourt le graphe avec ce mot
+        response = wordEntryWithCounters(word);
+        if (response) {std::cout << "found accepted word: " << word << std::endl;}
+    } while (!response && word.size() < VOID_TEST_BOUND);
+    return response;
+}
+
+bool Graph::voidTestFromEnd(int type)
+{
+    Graph newGraph = invertGraph();
+    return newGraph.voidTest(type);
+}
+
+Graph Graph::invertGraph()
+{
+    Graph newGraph(this);
+    return newGraph;
+}
+
 
 
 
@@ -292,7 +463,7 @@ bool Graph::voidTest()
 Graph::Node::~Node()
 {
     // call edges destructors
-    Edge *actualEdge = getFirstEdge();
+    Edge *actualEdge = _firstEdge;
     Edge *nextEdge = nullptr;
     while (actualEdge != nullptr)
     {
@@ -300,10 +471,6 @@ Graph::Node::~Node()
         delete(actualEdge);
         actualEdge = nextEdge;
     }
-    // delete pointers
-    delete(_next);
-    delete(_previous);
-    delete(_firstEdge);
 }
 
 int Graph::Node::addEdge(Edge* edge)
@@ -334,9 +501,7 @@ int Graph::Node::addEdge(Edge* edge)
 
 Graph::Edge::~Edge()
 {
-    delete(_origin);
-    delete(_target);
-    delete(_next);
+    // default dtor is enough
 }
 
 void Graph::Edge::addCounter(std::string op, int counterValue, int counterChange)

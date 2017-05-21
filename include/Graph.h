@@ -7,6 +7,9 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <math.h>
+#include <queue>
+#include <stack>
 
 
 class Graph
@@ -16,7 +19,9 @@ class Graph
         class Edge;
 
         Node *_head = nullptr;
-        int NUMBER_OF_COUNTERS, REVERSAL_BOUND;
+        int NUMBER_OF_COUNTERS, REVERSAL_BOUND, CONSTANT_C = 1;
+        size_t VOID_TEST_BOUND;
+        std::vector<char> ALPHABET;
 
         class Node
         {
@@ -91,8 +96,10 @@ class Graph
         };
 
     public:
+        const static int DEPTH_FIRST = 0, BREADTH_FIRST = 1, DEPTH_FIRST_FROM_END = 2, BREADTH_FIRST_FROM_END = 3;
         Graph(){};
         Graph(std::string fileName);
+        Graph(Graph *graph);
         ~Graph();
 
         Node* getHead(){return _head;}
@@ -101,7 +108,13 @@ class Graph
         void uglyPrint();
         int wordEntry(std::string word);
         int wordEntryWithCounters(std::string word);
-        bool voidTest();
+        Node* processNode(Node *actualNode, char letter, int counters[], int &numberOfReversals, int lastReversals[]);
+        bool voidTest(int type = 0);
+        bool voidTestLoopDFS(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word);
+        bool voidTestFullDFS();
+        bool voidTestFullBFS();
+        bool voidTestFromEnd(int type);
+        Graph invertGraph();
 };
 
 

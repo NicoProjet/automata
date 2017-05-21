@@ -1,0 +1,15 @@
+HEADER_SIZE 9
+NUMBER_OF_COUNTERS 1
+REVERSAL_BOUND 5
+ALPHABET A B C END
+LINE_BEGIN_SIZE 6
+FILE_SEPARATOR :
+objectType> if type==state: isResponse
+objectType> if type==link : origin:target:nextValue:operator:counter0:counter0_change:operator:counter1:counter1_change:... (ignored counter = -1, ignored value = '-')
+Cet automate accepte les mots ayant un C en 3eme position (alphabet = {a,b,c})    (deuxieme compteur inutile)
+state>0
+state>1
+link >0:1:C:=:2:0
+link >0:0:A:=:-1:1
+link >0:0:B:=:-1:1
+link >0:0:C:=:-1:1
