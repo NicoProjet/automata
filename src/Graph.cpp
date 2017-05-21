@@ -396,7 +396,6 @@ bool Graph::voidTestLoopDFS(Node *actualNode, int counters[], int numberOfRevers
 
 bool Graph::voidTestFullDFS()
 {
-    std::cout << "test" << std::endl;
     bool response = false;
     std::string word = "";
     std::stack<std::string> s;

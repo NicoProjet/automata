@@ -23,7 +23,7 @@ int main()
 
     // Tests for void tests
     std::cout << "\n Void test: " << std::endl;
-    (newGraph.voidTest(Graph::DEPTH_FIRST_FROM_END)) ? std::cout << "accepts at least one word" << std::endl : std::cout << "no word accepted" << std::endl;
+    (newGraph.voidTest(Graph::DEPTH_FIRST)) ? std::cout << "accepts at least one word" << std::endl : std::cout << "no word accepted" << std::endl;
 
     return 0;
 }
