@@ -231,6 +231,7 @@ Graph::~Graph()
 
 int Graph::addNode(Node* node)
 {
+    std::cout << "function" << std::endl;
     if (_head==nullptr)
     {
         _head=node;
@@ -523,7 +524,6 @@ bool Graph::voidTestFullBFS()
 bool Graph::voidTestFromEnd(int type)
 {
     invertGraph();
-    print();
     return voidTest(type);
 }
 
@@ -532,52 +532,6 @@ Graph Graph::makeInvertGraph()
     Graph newGraph(this);
     return newGraph;
 }
-
-/*
-void Graph::invertGraph()
-{
-    // infinite loop in nodes linked chain
-    Node *actualNode = _head;
-    Node *previousNode = nullptr;
-    Node *origin, *target;
-    std::stack<Node*> nodeStack;
-    std::stack<Edge*> edgeStack;
-    while (actualNode != nullptr)
-    {
-        Edge *previousEdge = nullptr;
-        Edge *actualEdge = actualNode->getFirstEdge();
-        actualNode->setFirstEdge(nullptr);
-        while (actualEdge != nullptr)
-        {
-            target = actualEdge->getTarget();
-            origin = actualEdge->getOrigin();
-            actualEdge->setTarget(origin);
-            actualEdge->setOrigin(target);
-            for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
-            origin->addEdge(actualEdge);
-            previousEdge = actualEdge;
-            actualEdge = actualEdge->getNext();
-            previousEdge->setNext(nullptr);
-        }
-        actualNode = actualNode->getNext();
-    }
-    // invert nodes
-    actualNode = _head;
-    actualNode->setIsResponse(true);
-    while (actualNode != nullptr)
-    {
-        nodeStack.push(actualNode);
-        actualNode = actualNode->getNext();
-    }
-    actualNode = nodeStack.top();
-    actualNode->setIsResponse(false);
-    while(!nodeStack.empty())
-    {
-        addNode(nodeStack.top());
-        nodeStack.pop();
-    }
-}
-*/
 
 void Graph::invertGraph()
 {
@@ -596,6 +550,7 @@ void Graph::invertGraph()
             edgeStack.push(actualEdge);
             actualEdge = actualEdge->getNext();
         }
+        nodeStack.push(actualNode);
         actualNode = actualNode->getNext();
     }
 
@@ -603,6 +558,7 @@ void Graph::invertGraph()
     _head = nullptr;
     while (!nodeStack.empty())
     {
+        std::cout << "call" << std::endl;
         addNode(nodeStack.top());
         nodeStack.pop();
     }
