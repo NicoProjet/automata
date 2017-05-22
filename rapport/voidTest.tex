@@ -1,0 +1,14 @@
+\section{Le test du vide}
+Au niveau du test du vide, le plus simple à mettre en oeuvre est un algorithme qui va tester chaque mot jusqu'à en trouver un qui est accepté. Ce fut donc la première étape. Cependant un algorithme pareil peut tourner indéfiniment si nous ne lui donnons pas de condition d'arrêt. Au niveau de condition d'arrêt, nous pouvons lui fournir plusieurs choses, une limite d'itération de l'algorithme, une limite en taille de mot, une limite en nombre de noeuds parcourus, une limite sur le nombre de fois qu'on parcourt un même noeud,... Il y a beaucoup de possibilités à ce niveau.\\
+
+
+\subsection{Taille des mots}
+La première limite introduit fut sur la taille des mots, en effet, comme précédemment cité, Oscar H. Ibarra a introduit une limite sur la taille des mots pour ce type de compteur (avant d'être certain d'avoir un état acceptant ou un boucle dans l'automate). Cette limite prend en compte plusieurs caractéristiques de l'automate étudié: le nombre de compteur(s) '$m$', le nombre de lien(s) '$s$' et une constance '$c$':
+\[ ( m \  s ) ^{s  c} \]
+Cette version du test du vide a une complexité dans le pire des cas en $O(a^{n})$ avec n, la taille maximale d'un mot, et a, le nombre de lettres dans l'alphabet de l'automate.
+
+\subsection{Parcours en longueur}
+C'est la première version du test du vide développée. Un parcours en longueur signifie qu'on travaille avec un stack (tas). On commence par remplir le mot avec la première lettre de l'alphabet, puis on met la deuxième lettre à la fin, etc.. Pour un alphabet {A, B} et des mots de 4 lettres, cela ressemble à: A, AA, AAA, AAAA, AAAB, AABA, AABB, ABAA, etc..
+
+\subsection{Parcours en largeur}
+Dans cette version, nous utilisons un heap (pile). Le premier rentré sera le premier servi, un parcours va ressembler à: A, B, AA, AB, BA, BB, AAA, AAB, ABA, ABB, etc..

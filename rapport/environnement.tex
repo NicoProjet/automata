@@ -1,0 +1,37 @@
+\section{Environnement automate}
+Avant de commencer à travailler sur un test du vide, il était nécessaire de développer un environnement de travail. Après une étude des automates, le travail a donc commencé. En résultat, nous avons maintenant un environnement permettant de créer des graphes représentant des automates. Ces derniers sont actuellement uniquement importés via des fichiers texte. Le parcours du graphe est possible suivant un mot et correspond au parcours d'un automate avec comme point de départ son état initial et en entrée toujours ce même mot.\par
+Il est possible d'utiliser plusieurs types d'automate. En effet, l'environnement ne s'est pas développé d'un coup, il a fallu commencer par travailler avec de simples automates. Chaque ajout n'empêche pas l'utilisateur d'utiliser les automates acceptés précédemment, il y a donc un travail de maintenance sur les versions précédentes. Dans l'ordre, les ajouts furent: l'import depuis un fichier, le parcours de l'automate, les compteurs avec opérateur de comparaison =, le fait de pouvoir ignorer des compteurs, les opérateurs < et > et enfin les limites d'inversion.\par
+Voici quelques commandes basiques pour l'utilisation de l'environnement:
+
+\subsection{Création d'un graphe automate:}
+Attention, le format du contenu du fichier d'import est strict: il faut, dans l'ordre, en première ligne, la taille du header (le nombre de ligne(s) contenant des caractéristiques de l'automate), les dites caractéristiques, les états et enfin les règles de transition (liens).
+\begin{verbatim} 
+Graph newGraph("automaton3.txt");
+\end{verbatim}
+
+\subsection{Affichage des nombres de noeuds et liens:}
+\begin{verbatim} 
+newGraph.uglyPrint();
+\end{verbatim}
+
+\subsection{Entrée d'un mot:}
+La fonction renvoie un booléen d'où la condition ternaire
+\begin{verbatim} 
+std::string word;
+std::cout << "enter your word: ";
+std::cin >> word;
+(newGraph.wordEntryWithCounters(word)) ?
+std::cout<<"accepted"<<std::endl : 
+std::cout<<"refused"<<std::endl;
+\end{verbatim}
+
+\subsection{Lancement d'un test du vide:}
+La fonction renvoie un booléen d'où la condition ternaire
+\begin{verbatim} 
+std::string accepted = "accepts at least 
+one word";
+std::string refused = "no word accepted";
+(newGraph.voidTest(Graph::DEPTH_FIRST)) ? 
+std::cout << accepted << std::endl :
+std::cout << refused << std::endl;
+\end{verbatim}
