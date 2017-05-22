@@ -170,7 +170,9 @@ Graph::Graph(std::string fileName)
             origin->addEdge(newEdge);
         }
     }
-    VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
+    //VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
+    VOID_TEST_BOUND = 6;
+    std::cout << "VOID_TEST_BOUND  IS STATIC" << std::endl;
 }
 
 Graph::~Graph()
@@ -268,15 +270,6 @@ int Graph::wordEntryWithCounters(std::string word)
     return actualNode->getIsResponse();
 }
 
-/*
-        // BUG caused by -> no short-circuit after actualEdge!=nullptr because there is a || in condition
-        while ((actualEdge!=nullptr // no more edges
-               && actualEdge->getValue()!=letter && actualEdge->getValue()!='-') // wrong value && not ignored
-               || !(actualEdge->checkCounters(counters))) // wrong counters
-        {
-            actualEdge = actualEdge->getNext();
-        }
-        */
 Graph::Node* Graph::processNode(Node *actualNode, char letter, int counters[], int &numberOfReversals, int lastReversals[])
 {
     // 1) find the right link
@@ -331,6 +324,7 @@ bool Graph::voidTestDynamicDFS(int type)
             return voidTestLoopDFS_withStatesSave(actualNode, counters, numberOfReversals, lastReversals, word, statesSave);
             break;
     }
+    return SUCCESS;
 }
 
 bool Graph::voidTestLoopDFS(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word)
@@ -485,20 +479,16 @@ bool Graph::voidTestFromEnd(int type)
     return voidTest(type);
 }
 
-Graph Graph::makeInvertGraph()
-{
-    Graph newGraph(this);
-    return newGraph;
-}
-
 void Graph::invertGraph()
 {
+    std::cout << "invert begin" << std::endl;
     Node *actualNode = _head, *previous;
     Node *origin, *target;
     Edge *actualEdge;
     std::stack<Node*> nodeStack;
     std::stack<Edge*> edgeStack;
     // fill the stacks and empty linked list in nodes
+    std::cout << "fill stacks" << std::endl;
     while (actualNode != nullptr)
     {
         actualEdge = actualNode->getFirstEdge();
@@ -513,6 +503,7 @@ void Graph::invertGraph()
         actualNode = actualNode->getNext();
         previous->setNext(nullptr);
     }
+    std::cout << "invert nodes order" << std::endl;
 
     // invert nodes order
     _head = nullptr;
@@ -522,12 +513,32 @@ void Graph::invertGraph()
         addNode(nodeStack.top());
         nodeStack.pop();
     }
+    std::cout << "create epsilon nodes" << std::endl;
+
+    // create Epsilon nodes
+    // 1) accepting state
+    Node newNode(true);
+    actualNode->setNext(&newNode);
+    Edge newEdge(actualNode, &newNode, '-');
+    for(int index = 0; index<NUMBER_OF_COUNTERS; index++)
+    {
+        newEdge.addCounter("=",0,0);
+    }
+    actualNode->addEdge(&newEdge);
+    actualNode->addDecEpsilonEdges(NUMBER_OF_COUNTERS);
+    // 2) initial state
     _head->setIsResponse(false);
-    actualNode->setIsResponse(true);
+    actualNode = _head;
+    Node newHead(false);
+    _head = &newHead;
+    _head->setNext(actualNode);
+    _head->addIncEpsilonEdges(NUMBER_OF_COUNTERS);
+    std::cout << "invert edges" << std::endl;
 
     // invert edges
     while (!edgeStack.empty())
     {
+        std::cout << "invert edges loop" << std::endl;
         actualEdge = edgeStack.top();
         edgeStack.pop();
         target = actualEdge->getTarget();
@@ -539,8 +550,9 @@ void Graph::invertGraph()
             actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));
         }
         actualEdge->setNext(nullptr);
-        origin->addEdge(actualEdge);
+        target->addEdge(actualEdge);
     }
+    std::cout << "invert end" << std::endl;
     print();
 }
 
@@ -595,6 +607,35 @@ int Graph::Node::addEdge(Edge* edge)
         actualEdge->setNext(edge);
         return SUCCESS;
     }
+}
+
+int Graph::Node::addIncEpsilonEdges(int NUMBER_OF_COUNTERS)
+{
+    addEpsilonEdges(NUMBER_OF_COUNTERS, 1);
+    return SUCCESS;
+}
+
+int Graph::Node::addDecEpsilonEdges(int NUMBER_OF_COUNTERS)
+{
+    addEpsilonEdges(NUMBER_OF_COUNTERS, -1);
+    return SUCCESS;
+}
+
+int Graph::Node::addEpsilonEdges(int NUMBER_OF_COUNTERS, int type)
+{
+    Edge *actualEdge = _firstEdge;
+    while (actualEdge != nullptr){actualEdge = actualEdge->getNext();}
+    for (int index = 0; index < NUMBER_OF_COUNTERS; index++)
+    {
+        Edge newEdge(this, this, ' ');
+        for (int i = 0; i< NUMBER_OF_COUNTERS; i++)
+        {
+            newEdge.addCounter("=",-1,0);
+        }
+        newEdge.setCounterChange(index, type);
+        addEdge(&newEdge);
+    }
+    return SUCCESS;
 }
 
 void Graph::Node::print()

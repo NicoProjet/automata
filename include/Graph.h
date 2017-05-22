@@ -19,7 +19,7 @@ class Graph
         class Edge;
 
         Node *_head = nullptr;
-        int NUMBER_OF_COUNTERS, REVERSAL_BOUND, CONSTANT_C = 2;
+        int NUMBER_OF_COUNTERS, REVERSAL_BOUND, CONSTANT_C = 1;
         size_t VOID_TEST_BOUND;
         std::vector<char> ALPHABET;
 
@@ -33,6 +33,7 @@ class Graph
                 static std::size_t numberOfStates;
                 std::size_t _id;
             public:
+                // ctors / dtors
                 Node(){};
                 Node(bool isResponse): _isResponse(isResponse), _id(numberOfStates++) {};
                 ~Node();
@@ -48,10 +49,13 @@ class Graph
                 void setIsResponse(bool boolean){_isResponse=boolean;}
                 std::size_t getID(){return _id;}
                 static std::size_t getNumberOfStates(){return numberOfStates;}
-                void print();
 
                 // other methods
                 int addEdge(Edge *edge);
+                int addIncEpsilonEdges(int NUMBER_OF_COUNTERS);
+                int addDecEpsilonEdges(int NUMBER_OF_COUNTERS);
+                int addEpsilonEdges(int NUMBER_OF_COUNTERS, int type);
+                void print();
 
         };
 
@@ -70,9 +74,9 @@ class Graph
                 std::size_t _id = numberOfLinks++;
 
             public:
+                // ctors / dtors
                 Edge(){};
                 Edge(Node* origin, Node* target, char value): _origin(origin), _target(target), _value(value), _ignoredValue(value=='-') {};
-
                 ~Edge();
 
                 // getters/setters
@@ -86,18 +90,20 @@ class Graph
                 void setValue(char value){_value = value;}
                 int getCounter(int index){return _counters[index];}
                 void setCounter(int index, int value){_counters[index] = value;}
-                void addCounter(int value){_counters.push_back(value);}
                 int getCounterChange(int index){return _countersChanges[index];}
                 void setCounterChange(int index, int value){_countersChanges[index] = value;}
+                bool getIgnoredValue(){return _ignoredValue;}
+                void setIgnoredValue(bool value){_ignoredValue = value;}
+                size_t getId(){return _id;}
+
+                // others
+                void addCounter(int value){_counters.push_back(value);}
                 void addCounterChange(int value){_countersChanges.push_back(value);}
                 void addCounterOperator(std::string op){_countersOperators.push_back(op);}
                 void addCounter(std::string op, int counterValue, int counterChange);
-                bool getIgnoredValue(){return _ignoredValue;}
-                void setIgnoredValue(bool value){_ignoredValue = value;}
                 int checkCounters(int counters[]);
                 int updateCounters(int counters[], int lastReversals[]);
                 void print();
-                size_t getId(){return _id;}
         };
 
         class StateSave
@@ -107,14 +113,23 @@ class Graph
                 std::vector<int> _counters;
 
             public:
+                // ctors / dtors
                 StateSave(Node *state, int counters[], size_t numberOfCounters);
+                ~StateSave(){}
+
+                // getters / setters
                 size_t getNodeID() const {return _state->getID();}
+
+                // operator overloads
+                bool operator==(const StateSave& other);
+
+                // others
                 int checkCounters(std::vector<int> counters);
                 void addCounter(int value){_counters.push_back(value);}
-                bool operator==(const StateSave& other);
         };
 
     public:
+        // constants
         const static int
          DEPTH_FIRST = 0,
          BREADTH_FIRST = 1,
@@ -123,11 +138,16 @@ class Graph
          FROM_END = 3,
          BREADTH_FIRST_FROM_END = 4,
          DEPTH_FIRST_FROM_END = 5;
+
+        // ctors / dtors
         Graph(){};
         Graph(std::string fileName);
         ~Graph();
 
+        // getters / setters
         Node* getHead(){return _head;}
+
+        // others
         int addNode(Node* node);
         static Graph* readFile(std::string fileName);
         void uglyPrint();
