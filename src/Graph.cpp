@@ -231,7 +231,6 @@ Graph::~Graph()
 
 int Graph::addNode(Node* node)
 {
-    std::cout << "function" << std::endl;
     if (_head==nullptr)
     {
         _head=node;
@@ -535,7 +534,7 @@ Graph Graph::makeInvertGraph()
 
 void Graph::invertGraph()
 {
-    Node *actualNode = _head;
+    Node *actualNode = _head, *previous;
     Node *origin, *target;
     Edge *actualEdge;
     std::stack<Node*> nodeStack;
@@ -551,14 +550,15 @@ void Graph::invertGraph()
             actualEdge = actualEdge->getNext();
         }
         nodeStack.push(actualNode);
+        previous = actualNode;
         actualNode = actualNode->getNext();
+        previous->setNext(nullptr);
     }
 
     // invert nodes order
     _head = nullptr;
     while (!nodeStack.empty())
     {
-        std::cout << "call" << std::endl;
         addNode(nodeStack.top());
         nodeStack.pop();
     }
@@ -572,7 +572,8 @@ void Graph::invertGraph()
         origin = actualEdge->getOrigin();
         actualEdge->setTarget(origin);
         actualEdge->setOrigin(target);
-        for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
+        for (int i = 0; i<NUMBER_OF_COUNTERS; i++){
+                std::cout << "hello";actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
         actualEdge->setNext(nullptr);
         origin->addEdge(actualEdge);
     }
