@@ -1,0 +1,98 @@
+\section{Exemples d'exécution}
+L'automate utilisé pour la plupart des tests est un automate qui reconnaît tout mot ayant un 'C' en $3^{eme}$ lettre. Cet automate peut être importé grâce à un fichier de format:
+state>isResponse
+link >origin:target:value:comparaisonOperator:counterValue:counterModification
+\begin{verbatim}
+HEADER_SIZE 6
+NUMBER_OF_COUNTERS 1
+REVERSAL_BOUND 5
+ALPHABET A B C END
+LINE_BEGIN_SIZE 6
+FILE_SEPARATOR :
+state>0
+state>1
+link >0:1:C:=:2:0
+link >0:0:A:=:-1:1
+link >0:0:B:=:-1:1
+link >0:0:C:=:-1:1
+\end{verbatim}
+
+\subsection{Nous Créons le Graphe grâce à la ligne:}
+\begin{verbatim}
+Graph newGraph("automaton3.txt");
+\end{verbatim}
+
+\subsection{Nous l'affichons ensuite:}
+\begin{verbatim}
+newGraph.print();
+\end{verbatim}
+
+\subsection{Ce qui a pour résultat:}
+Les lignes trop grandes ont été tronquées par un '/'.
+\begin{verbatim}
+Graph:
+
+state> ID: 0 | isResponse: 0
+link > ID: 0 > origin: 0 -> target: 1 | /
+    value: C > counter: =:2:0:
+link > ID: 1 > origin: 0 -> target: 0 | /
+    value: A > counter: =:-1:1:
+link > ID: 2 > origin: 0 -> target: 0 | /
+    value: B > counter: =:-1:1:
+link > ID: 3 > origin: 0 -> target: 0 | /
+    value: C > counter: =:-1:1:
+
+state> ID: 1 | isResponse: 1
+
+\end{verbatim}
+
+\subsection{Nous pouvons entrer un mot grâce à}
+\begin{verbatim}
+std::string word;
+  while(word != "exit")
+  {
+    std::cout << "enter your word: ";
+    std::cin >> word;
+    (newGraph.wordEntryWithCounters(word))\
+    ? std::cout<<"accepted"<<std::endl :\
+    std::cout<<"refused"<<std::endl;
+  }
+\end{verbatim}
+
+\subsection{Ce qui va donner:}
+\begin{verbatim}
+enter your word: bababababa
+refused
+enter your word: ccaccca
+refused
+enter your word: aacaaaa
+accepted
+enter your word: ccccccc
+accepted
+enter your word: exit
+
+\end{verbatim}
+
+\subsection{Un test du vide peut être appelé grâce à la ligne:}
+\begin{verbatim}
+newGraph.voidTest(Graph::DEPTH_FIRST)
+\end{verbatim}
+Graph::DEPTH\_FIRST est un des multiples types de test du vide implémentés, voici une liste exhaustive:
+\begin{itemize}
+    \item DEPTH\_FIRST
+    \item BREADTH\_FIRST
+    \item DEPTH\_FIRST\_DYNAMIC
+    \item DEPTH\_FIRST\_DYNAMIC\_STATES\_SAVE
+    \item DEPTH\_FIRST\_FROM\_END
+    \item BREADTH\_FIRST\_FROM\_END
+\end{itemize}
+
+\subsection{Pour notre petit automate, nous avons comme résultat:}
+\subsubsection{DEPTH\_FIRST}
+Parcours en profondeur, trouve 'AAC' en 0.010s à 0.012s.
+\subsubsection{DEPTH\_FIRST}
+Parcours en largeur, trouve 'AAC' en 0.010s à 0.014s.
+\subsection{DEPTH\_FIRST\_DYNAMIC}
+Parcours en profondeur dynamique, trouve 'AAC' en 0.009s à 0.012s.\par
+
+On remarque donc que dans le cas d'un automate si petit, la différence est minime. Simplement car une partie du temps d'exécution est utilisée pour la construction du graphe et la lecture du fichier. Ces éléments deviendront mois significatifs pour de plus grands automates.
