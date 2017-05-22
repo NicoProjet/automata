@@ -170,9 +170,7 @@ Graph::Graph(std::string fileName)
             origin->addEdge(newEdge);
         }
     }
-    //VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
-    VOID_TEST_BOUND = 6;
-    std::cout << "VOID_TEST_BOUND  IS STATIC" << std::endl;
+    VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
 }
 
 Graph::~Graph()
@@ -423,7 +421,6 @@ bool Graph::voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int
 
 bool Graph::voidTestFullDFS()
 {
-    std::cout << "VOID TEST FULL DFS BEGIN" << std::endl;
     bool response = false;
     std::string word = "";
     std::stack<std::string> s;
@@ -431,7 +428,6 @@ bool Graph::voidTestFullDFS()
     do
     {
         word = s.top();
-        std::cout << word << std::endl;
         s.pop();
         if (word.size() < VOID_TEST_BOUND)
         {
@@ -444,7 +440,6 @@ bool Graph::voidTestFullDFS()
         response = wordEntryWithCounters(word);
         if (response){std::cout << "found accepted word: " << word << std::endl;}
     } while (!response && !s.empty());
-    std::cout << "VOID TEST FULL DFS END" << std::endl;
     return response;
 }
 
@@ -481,14 +476,12 @@ bool Graph::voidTestFromEnd(int type)
 
 void Graph::invertGraph()
 {
-    std::cout << "invert begin" << std::endl;
     Node *actualNode = _head, *previous;
     Node *origin, *target;
     Edge *actualEdge;
     std::stack<Node*> nodeStack;
     std::stack<Edge*> edgeStack;
     // fill the stacks and empty linked list in nodes
-    std::cout << "fill stacks" << std::endl;
     while (actualNode != nullptr)
     {
         actualEdge = actualNode->getFirstEdge();
@@ -503,7 +496,6 @@ void Graph::invertGraph()
         actualNode = actualNode->getNext();
         previous->setNext(nullptr);
     }
-    std::cout << "invert nodes order" << std::endl;
 
     // invert nodes order
     _head = nullptr;
@@ -513,32 +505,29 @@ void Graph::invertGraph()
         addNode(nodeStack.top());
         nodeStack.pop();
     }
-    std::cout << "create epsilon nodes" << std::endl;
 
     // create Epsilon nodes
     // 1) accepting state
-    Node newNode(true);
-    actualNode->setNext(&newNode);
-    Edge newEdge(actualNode, &newNode, '-');
+    Node *newNode = new Node(true);
+    actualNode->setNext(newNode);
+    Edge *newEdge = new Edge(actualNode, newNode, '-');
     for(int index = 0; index<NUMBER_OF_COUNTERS; index++)
     {
-        newEdge.addCounter("=",0,0);
+        newEdge->addCounter("=",0,0);
     }
-    actualNode->addEdge(&newEdge);
+    actualNode->addEdge(newEdge);
     actualNode->addDecEpsilonEdges(NUMBER_OF_COUNTERS);
     // 2) initial state
     _head->setIsResponse(false);
     actualNode = _head;
-    Node newHead(false);
-    _head = &newHead;
+    Node *newHead = new Node(false);
+    _head = newHead;
     _head->setNext(actualNode);
     _head->addIncEpsilonEdges(NUMBER_OF_COUNTERS);
-    std::cout << "invert edges" << std::endl;
 
     // invert edges
     while (!edgeStack.empty())
     {
-        std::cout << "invert edges loop" << std::endl;
         actualEdge = edgeStack.top();
         edgeStack.pop();
         target = actualEdge->getTarget();
@@ -550,10 +539,26 @@ void Graph::invertGraph()
             actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));
         }
         actualEdge->setNext(nullptr);
+        // enters else loop and nevers gets out
+        // means edges linked list has a loop
+        // trying to add same edge twice? YUP I WAS RIGHT, DAMNIT =D
         target->addEdge(actualEdge);
     }
-    std::cout << "invert end" << std::endl;
-    print();
+    // pour chaque lien partant de actualNode
+    // regarder la valeur des compteurs, recopier ces valeurs dans de nouveaux liens
+    actualNode = _head->getNext();
+    actualEdge = actualNode->getFirstEdge();
+    while(actualEdge != nullptr)
+    {
+        Edge *newEdge0 = new Edge(_head, actualNode, '-');
+        // set counters values
+        for (int i = 0; i<NUMBER_OF_COUNTERS; i++)
+        {
+            newEdge0->addCounter("=",actualEdge->getCounter(i),0);
+        }
+        _head->addEdge(newEdge0);
+        actualEdge = actualEdge->getNext();
+    }
 }
 
 void Graph::print()
@@ -623,17 +628,15 @@ int Graph::Node::addDecEpsilonEdges(int NUMBER_OF_COUNTERS)
 
 int Graph::Node::addEpsilonEdges(int NUMBER_OF_COUNTERS, int type)
 {
-    Edge *actualEdge = _firstEdge;
-    while (actualEdge != nullptr){actualEdge = actualEdge->getNext();}
     for (int index = 0; index < NUMBER_OF_COUNTERS; index++)
     {
-        Edge newEdge(this, this, ' ');
+        Edge *newEdge = new Edge(this,this, '-');
         for (int i = 0; i< NUMBER_OF_COUNTERS; i++)
         {
-            newEdge.addCounter("=",-1,0);
+            newEdge->addCounter("=",-1,0);
         }
-        newEdge.setCounterChange(index, type);
-        addEdge(&newEdge);
+        newEdge->setCounterChange(index, type);
+        addEdge(newEdge);
     }
     return SUCCESS;
 }
@@ -741,6 +744,7 @@ void Graph::Edge::print()
     std::cout << "link > ID: " <<  _id;
     std::cout << " > origin: " << _origin->getID();
     std::cout << " -> target: " << _target->getID();
+    std::cout << " | value: " << _value;
     std::cout << " > counters: ";
     for (size_t index = 0; index<_counters.size(); index++)
     {

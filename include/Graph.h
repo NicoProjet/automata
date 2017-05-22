@@ -94,7 +94,7 @@ class Graph
                 void setCounterChange(int index, int value){_countersChanges[index] = value;}
                 bool getIgnoredValue(){return _ignoredValue;}
                 void setIgnoredValue(bool value){_ignoredValue = value;}
-                size_t getId(){return _id;}
+                size_t getID(){return _id;}
 
                 // others
                 void addCounter(int value){_counters.push_back(value);}
