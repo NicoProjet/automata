@@ -539,9 +539,6 @@ void Graph::invertGraph()
             actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));
         }
         actualEdge->setNext(nullptr);
-        // enters else loop and nevers gets out
-        // means edges linked list has a loop
-        // trying to add same edge twice? YUP I WAS RIGHT, DAMNIT =D
         target->addEdge(actualEdge);
     }
     // pour chaque lien partant de actualNode
