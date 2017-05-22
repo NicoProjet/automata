@@ -473,6 +473,7 @@ bool Graph::voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int
 
 bool Graph::voidTestFullDFS()
 {
+    std::cout << "VOID TEST FULL DFS BEGIN" << std::endl;
     bool response = false;
     std::string word = "";
     std::stack<std::string> s;
@@ -480,6 +481,7 @@ bool Graph::voidTestFullDFS()
     do
     {
         word = s.top();
+        std::cout << word << std::endl;
         s.pop();
         if (word.size() < VOID_TEST_BOUND)
         {
@@ -491,7 +493,8 @@ bool Graph::voidTestFullDFS()
         }
         response = wordEntryWithCounters(word);
         if (response){std::cout << "found accepted word: " << word << std::endl;}
-    } while (!response);
+    } while (!response && !s.empty());
+    std::cout << "VOID TEST FULL DFS END" << std::endl;
     return response;
 }
 
@@ -516,7 +519,7 @@ bool Graph::voidTestFullBFS()
         // on parcourt le graphe avec ce mot
         response = wordEntryWithCounters(word);
         if (response) {std::cout << "found accepted word: " << word << std::endl;}
-    } while (!response && word.size() < VOID_TEST_BOUND);
+    } while (!response && word.size() < VOID_TEST_BOUND && !heap.empty());
     return response;
 }
 
@@ -559,9 +562,12 @@ void Graph::invertGraph()
     _head = nullptr;
     while (!nodeStack.empty())
     {
+        actualNode = nodeStack.top();
         addNode(nodeStack.top());
         nodeStack.pop();
     }
+    _head->setIsResponse(false);
+    actualNode->setIsResponse(true);
 
     // invert edges
     while (!edgeStack.empty())
@@ -572,8 +578,10 @@ void Graph::invertGraph()
         origin = actualEdge->getOrigin();
         actualEdge->setTarget(origin);
         actualEdge->setOrigin(target);
-        for (int i = 0; i<NUMBER_OF_COUNTERS; i++){
-                std::cout << "hello";actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
+        for (int i = 0; i<NUMBER_OF_COUNTERS; i++)
+        {
+            actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));
+        }
         actualEdge->setNext(nullptr);
         origin->addEdge(actualEdge);
     }
@@ -635,8 +643,8 @@ int Graph::Node::addEdge(Edge* edge)
 
 void Graph::Node::print()
 {
-    std::cout << "\nstate> ID: ";
-    std::cout << _id << std::endl;
+    std::cout << "\nstate> ID: " << _id;
+    std::cout << " | isResponse: " << _isResponse << std::endl;
     Edge *actualEdge = _firstEdge;
     while (actualEdge != nullptr)
     {
