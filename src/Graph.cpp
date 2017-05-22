@@ -533,6 +533,7 @@ Graph Graph::makeInvertGraph()
     return newGraph;
 }
 
+/*
 void Graph::invertGraph()
 {
     // infinite loop in nodes linked chain
@@ -540,6 +541,7 @@ void Graph::invertGraph()
     Node *previousNode = nullptr;
     Node *origin, *target;
     std::stack<Node*> nodeStack;
+    std::stack<Edge*> edgeStack;
     while (actualNode != nullptr)
     {
         Edge *previousEdge = nullptr;
@@ -565,9 +567,7 @@ void Graph::invertGraph()
     while (actualNode != nullptr)
     {
         nodeStack.push(actualNode);
-        previousNode = actualNode;
         actualNode = actualNode->getNext();
-        previousNode->setNext(nullptr);
     }
     actualNode = nodeStack.top();
     actualNode->setIsResponse(false);
@@ -576,6 +576,51 @@ void Graph::invertGraph()
         addNode(nodeStack.top());
         nodeStack.pop();
     }
+}
+*/
+
+void Graph::invertGraph()
+{
+    Node *actualNode = _head;
+    Node *origin, *target;
+    Edge *actualEdge;
+    std::stack<Node*> nodeStack;
+    std::stack<Edge*> edgeStack;
+    // fill the stacks and empty linked list in nodes
+    while (actualNode != nullptr)
+    {
+        actualEdge = actualNode->getFirstEdge();
+        actualNode->setFirstEdge(nullptr);
+        while (actualEdge != nullptr)
+        {
+            edgeStack.push(actualEdge);
+            actualEdge = actualEdge->getNext();
+        }
+        actualNode = actualNode->getNext();
+    }
+
+    // invert nodes order
+    _head = nullptr;
+    while (!nodeStack.empty())
+    {
+        addNode(nodeStack.top());
+        nodeStack.pop();
+    }
+
+    // invert edges
+    while (!edgeStack.empty())
+    {
+        actualEdge = edgeStack.top();
+        edgeStack.pop();
+        target = actualEdge->getTarget();
+        origin = actualEdge->getOrigin();
+        actualEdge->setTarget(origin);
+        actualEdge->setOrigin(target);
+        for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
+        actualEdge->setNext(nullptr);
+        origin->addEdge(actualEdge);
+    }
+    print();
 }
 
 void Graph::print()
