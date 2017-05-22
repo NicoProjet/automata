@@ -31,10 +31,10 @@ class Graph
                 Edge *_firstEdge = nullptr;
                 bool _isResponse;
                 static std::size_t numberOfStates;
-                std::size_t _id = numberOfStates++;
+                std::size_t _id;
             public:
                 Node(){};
-                Node(bool isResponse): _isResponse(isResponse){};
+                Node(bool isResponse): _isResponse(isResponse), _id(numberOfStates++) {};
                 ~Node();
 
                 //  getters/setters
@@ -48,6 +48,7 @@ class Graph
                 void setIsResponse(bool boolean){_isResponse=boolean;}
                 std::size_t getID(){return _id;}
                 static std::size_t getNumberOfStates(){return numberOfStates;}
+                void print();
 
                 // other methods
                 int addEdge(Edge *edge);
@@ -95,7 +96,7 @@ class Graph
                 void setIgnoredValue(bool value){_ignoredValue = value;}
                 int checkCounters(int counters[]);
                 int updateCounters(int counters[], int lastReversals[]);
-                std::string toString();
+                void print();
                 size_t getId(){return _id;}
         };
 
@@ -106,6 +107,7 @@ class Graph
                 std::vector<int> _counters;
 
             public:
+                StateSave(Node *state, int counters[], size_t numberOfCounters);
                 size_t getNodeID() const {return _state->getID();}
                 int checkCounters(std::vector<int> counters);
                 void addCounter(int value){_counters.push_back(value);}
@@ -116,10 +118,11 @@ class Graph
         const static int
          DEPTH_FIRST = 0,
          BREADTH_FIRST = 1,
-         DEPTH_FIRST_FROM_END = 2,
-         BREADTH_FIRST_FROM_END = 3,
-         DEPTH_FIRST_DYNAMIC = 4,
-         DEPTH_FIRST_DYNAMIC_STATES_SAVE = 5;
+         DEPTH_FIRST_DYNAMIC = 2,
+         DEPTH_FIRST_DYNAMIC_STATES_SAVE = 3,
+         FROM_END = 3,
+         BREADTH_FIRST_FROM_END = 4,
+         DEPTH_FIRST_FROM_END = 5;
         Graph(){};
         Graph(std::string fileName);
         Graph(Graph *graph);
@@ -141,6 +144,7 @@ class Graph
         Graph makeInvertGraph();
         void invertGraph();
         bool voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word, std::vector<StateSave> statesSave);
+        void print();
 };
 
 

@@ -353,8 +353,9 @@ bool Graph::voidTest(int type)
         case DEPTH_FIRST_FROM_END: return voidTestFromEnd(DEPTH_FIRST); break;
         case BREADTH_FIRST_FROM_END: return voidTestFromEnd(BREADTH_FIRST); break;
         case DEPTH_FIRST_DYNAMIC: return voidTestDynamicDFS(DEPTH_FIRST_DYNAMIC); break;
-        case DEPTH_FIRST_DYNAMIC_STATES_SAVE: break;
+        case DEPTH_FIRST_DYNAMIC_STATES_SAVE: return voidTestDynamicDFS(DEPTH_FIRST_DYNAMIC_STATES_SAVE); break;
     }
+    return FAILURE;
 }
 
 bool Graph::voidTestDynamicDFS(int type)
@@ -446,7 +447,19 @@ bool Graph::voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int
             response = nextNode->getIsResponse();
             if (!response)
             {
-                response = voidTestLoopDFS_withStatesSave(nextNode, newCounters, newNumberOfReversals, newLastReversals, newWord, statesSave);
+                StateSave newSave(actualNode, counters, NUMBER_OF_COUNTERS);
+                bool stateAlreadyComputed = false;
+                size_t i = 0;
+                while (i<statesSave.size() && !stateAlreadyComputed)
+                {
+                    stateAlreadyComputed = newSave == statesSave[i];
+                    i++;
+                }
+                if (!stateAlreadyComputed)
+                {
+                    statesSave.push_back(newSave);
+                    response = voidTestLoopDFS_withStatesSave(nextNode, newCounters, newNumberOfReversals, newLastReversals, newWord, statesSave);
+                }
             }
             else
             {
@@ -510,6 +523,7 @@ bool Graph::voidTestFullBFS()
 bool Graph::voidTestFromEnd(int type)
 {
     invertGraph();
+    print();
     return voidTest(type);
 }
 
@@ -521,6 +535,7 @@ Graph Graph::makeInvertGraph()
 
 void Graph::invertGraph()
 {
+    // infinite loop in linked chains
     Node *actualNode = _head;
     Node *previousNode = nullptr;
     Node *origin, *target;
@@ -563,6 +578,18 @@ void Graph::invertGraph()
     }
 }
 
+void Graph::print()
+{
+    std::cout << "Graph :\n";
+    Node *actualNode = _head;
+    while (actualNode != nullptr)
+    {
+        actualNode->print();
+        actualNode = actualNode->getNext();
+        std::cout << std::endl;
+    }
+}
+
 
 
 
@@ -601,6 +628,19 @@ int Graph::Node::addEdge(Edge* edge)
         }
         actualEdge->setNext(edge);
         return SUCCESS;
+    }
+}
+
+void Graph::Node::print()
+{
+    std::cout << "\nstate> ID: ";
+    std::cout << _id << std::endl;
+    Edge *actualEdge = _firstEdge;
+    while (actualEdge != nullptr)
+    {
+        actualEdge->print();
+        actualEdge = actualEdge->getNext();
+        std::cout << std::endl;
     }
 }
 
@@ -689,11 +729,18 @@ int Graph::Edge::updateCounters(int counters[], int lastReversals[])
     return numberOfReversals;
 }
 
-std::string Graph::Edge::toString()
+void Graph::Edge::print()
 {
-    std::string str = "link >";
-    str += _id;
-    return str;
+    std::cout << "link > ID: " <<  _id;
+    std::cout << " > origin: " << _origin->getID();
+    std::cout << " -> target: " << _target->getID();
+    std::cout << " > counters: ";
+    for (size_t index = 0; index<_counters.size(); index++)
+    {
+        std::cout << _countersOperators[index] << ":";
+        std::cout << _counters[index] << ":";
+        std::cout << _countersChanges[index] << ":";
+    }
 }
 
 
@@ -702,6 +749,15 @@ std::string Graph::Edge::toString()
 ++++++++++     Classe StateSave     ++++++++++++
 ++++++++++++++++++++++++++++++++++++++++++++++++
 */
+
+Graph::StateSave::StateSave(Node *state, int counters[], size_t numberOfCounters)
+{
+    _state = state;
+    for (size_t index = 0; index<numberOfCounters; index++)
+    {
+        addCounter(counters[index]);
+    }
+}
 
 int Graph::StateSave::checkCounters(std::vector<int> counters)
 {

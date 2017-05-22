@@ -7,6 +7,7 @@ int main()
     // automaton0.txt accepte tous les mots qui finissent pas C (alphabet = {A,B,C})
     Graph newGraph("automaton3.txt");
     newGraph.uglyPrint();
+    newGraph.print();
 
 
     // Tests words entries
@@ -23,7 +24,7 @@ int main()
 
     // Tests for void tests
     std::cout << "\n Void test: " << std::endl;
-    (newGraph.voidTest(Graph::DEPTH_FIRST_DYNAMIC)) ? std::cout << "accepts at least one word" << std::endl : std::cout << "no word accepted" << std::endl;
+    (newGraph.voidTest(Graph::DEPTH_FIRST_FROM_END)) ? std::cout << "accepts at least one word" << std::endl : std::cout << "no word accepted" << std::endl;
 
     return 0;
 }
