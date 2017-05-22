@@ -346,10 +346,33 @@ bool Graph::voidTest(int type)
 {
     switch(type)
     {
+        // I know breaks are useless because we return juste before ...
+        // it is out of habit and safety
         case DEPTH_FIRST: return voidTestFullDFS(); break;
         case BREADTH_FIRST: return voidTestFullBFS(); break;
         case DEPTH_FIRST_FROM_END: return voidTestFromEnd(DEPTH_FIRST); break;
         case BREADTH_FIRST_FROM_END: return voidTestFromEnd(BREADTH_FIRST); break;
+        case DEPTH_FIRST_DYNAMIC: return voidTestDynamicDFS(DEPTH_FIRST_DYNAMIC); break;
+        case DEPTH_FIRST_DYNAMIC_STATES_SAVE: break;
+    }
+}
+
+bool Graph::voidTestDynamicDFS(int type)
+{
+    Node *actualNode = _head;
+    int numberOfReversals = 0;
+    int counters[NUMBER_OF_COUNTERS] = {0};
+    int lastReversals[NUMBER_OF_COUNTERS] = {0};
+    std::string word = "";
+    switch (type)
+    {
+        case DEPTH_FIRST_DYNAMIC:
+            return voidTestLoopDFS(actualNode, counters, numberOfReversals, lastReversals, word);
+            break;
+        case DEPTH_FIRST_DYNAMIC_STATES_SAVE:
+            std::vector<StateSave> statesSave;
+            return voidTestLoopDFS_withStatesSave(actualNode, counters, numberOfReversals, lastReversals, word, statesSave);
+            break;
     }
 }
 
@@ -383,6 +406,47 @@ bool Graph::voidTestLoopDFS(Node *actualNode, int counters[], int numberOfRevers
             if (!response)
             {
                 response = voidTestLoopDFS(nextNode, newCounters, newNumberOfReversals, newLastReversals, newWord);
+            }
+            else
+            {
+                std::cout << "found accepted word: " << newWord << std::endl;
+            }
+            index++;
+        }
+    }
+    return response;
+}
+
+bool Graph::voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word, std::vector<StateSave> statesSave)
+{
+    bool response = false;
+    if (word.size() < VOID_TEST_BOUND){
+        size_t index = 0;
+        while (index < ALPHABET.size() && !response)
+        {
+            // deepCopy counters state and word
+            int newCounters[NUMBER_OF_COUNTERS];
+            int newLastReversals[NUMBER_OF_COUNTERS];
+            for (int i = 0; i<NUMBER_OF_COUNTERS; i++)
+            {
+                newCounters[i] = counters[i];
+                newLastReversals[i] = lastReversals[i];
+            }
+            int newNumberOfReversals = numberOfReversals;
+            std::string newWord = word;
+
+            // find new state
+            newWord += ALPHABET[index];
+            Node *lastNode = actualNode;
+            Node *nextNode = processNode(actualNode, ALPHABET[index], newCounters, newNumberOfReversals, newLastReversals);
+            if ((actualNode == nullptr) || (REVERSAL_BOUND != -1  &&  newNumberOfReversals > REVERSAL_BOUND))
+            {
+                return lastNode->getIsResponse();
+            }
+            response = nextNode->getIsResponse();
+            if (!response)
+            {
+                response = voidTestLoopDFS_withStatesSave(nextNode, newCounters, newNumberOfReversals, newLastReversals, newWord, statesSave);
             }
             else
             {
@@ -631,3 +695,28 @@ std::string Graph::Edge::toString()
     str += _id;
     return str;
 }
+
+
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++     Classe StateSave     ++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+
+int Graph::StateSave::checkCounters(std::vector<int> counters)
+{
+    int response = 1, index = 0, countersSize = _counters.size();
+    while (index<countersSize && response)
+    {
+        response = _counters[index] == counters[index];
+        index++;
+    }
+    return response;
+}
+
+
+bool Graph::StateSave::operator==(const StateSave& other)
+{
+    return _state->getID() == other.getNodeID() && checkCounters(other._counters);
+}
+

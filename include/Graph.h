@@ -99,8 +99,27 @@ class Graph
                 size_t getId(){return _id;}
         };
 
+        class StateSave
+        {
+            private:
+                Node *_state;
+                std::vector<int> _counters;
+
+            public:
+                size_t getNodeID() const {return _state->getID();}
+                int checkCounters(std::vector<int> counters);
+                void addCounter(int value){_counters.push_back(value);}
+                bool operator==(const StateSave& other);
+        };
+
     public:
-        const static int DEPTH_FIRST = 0, BREADTH_FIRST = 1, DEPTH_FIRST_FROM_END = 2, BREADTH_FIRST_FROM_END = 3;
+        const static int
+         DEPTH_FIRST = 0,
+         BREADTH_FIRST = 1,
+         DEPTH_FIRST_FROM_END = 2,
+         BREADTH_FIRST_FROM_END = 3,
+         DEPTH_FIRST_DYNAMIC = 4,
+         DEPTH_FIRST_DYNAMIC_STATES_SAVE = 5;
         Graph(){};
         Graph(std::string fileName);
         Graph(Graph *graph);
@@ -117,9 +136,11 @@ class Graph
         bool voidTestLoopDFS(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word);
         bool voidTestFullDFS();
         bool voidTestFullBFS();
+        bool voidTestDynamicDFS(int type);
         bool voidTestFromEnd(int type);
         Graph makeInvertGraph();
         void invertGraph();
+        bool voidTestLoopDFS_withStatesSave(Node *actualNode, int counters[], int numberOfReversals, int lastReversals[], std::string word, std::vector<StateSave> statesSave);
 };
 
 
