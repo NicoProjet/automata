@@ -19,7 +19,7 @@ class Graph
         class Edge;
 
         Node *_head = nullptr;
-        int NUMBER_OF_COUNTERS, REVERSAL_BOUND, CONSTANT_C = 1;
+        int NUMBER_OF_COUNTERS, REVERSAL_BOUND, CONSTANT_C = 2;
         size_t VOID_TEST_BOUND;
         std::vector<char> ALPHABET;
 
@@ -125,7 +125,6 @@ class Graph
          DEPTH_FIRST_FROM_END = 5;
         Graph(){};
         Graph(std::string fileName);
-        Graph(Graph *graph);
         ~Graph();
 
         Node* getHead(){return _head;}

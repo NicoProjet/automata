@@ -173,50 +173,6 @@ Graph::Graph(std::string fileName)
     VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
 }
 
-Graph::Graph(Graph *g)
-{
-    NUMBER_OF_COUNTERS = g->NUMBER_OF_COUNTERS;
-    REVERSAL_BOUND = g->REVERSAL_BOUND;
-    ALPHABET = g->ALPHABET;
-    Node *actualNode = g->getHead();
-    Node *origin, *target;
-    std::stack<Node*> nodeStack;
-    std::stack<Edge*> edgeStack;
-    int numberOfLinks;
-    // invert edges
-    while (actualNode != nullptr)
-    {
-        Edge *actualEdge = actualNode->getFirstEdge();
-        while (actualEdge != nullptr)
-        {
-            numberOfLinks++;
-            target = actualEdge->getTarget();
-            origin = actualEdge->getOrigin();
-            actualEdge->setTarget(origin);
-            actualEdge->setOrigin(target);
-            for (int i; i<NUMBER_OF_COUNTERS; i++){actualEdge->setCounterChange(i,-(actualEdge->getCounterChange(i)));}
-            actualEdge = actualEdge->getNext();
-        }
-        actualNode = actualNode->getNext();
-    }
-    // invert nodes
-    actualNode = g->getHead();
-    actualNode->setIsResponse(true);
-    while (actualNode != nullptr)
-    {
-        nodeStack.push(actualNode);
-        actualNode=actualNode->getNext();
-    }
-    actualNode = nodeStack.top();
-    actualNode->setIsResponse(false);
-    while(!nodeStack.empty())
-    {
-        addNode(nodeStack.top());
-        nodeStack.pop();
-    }
-    VOID_TEST_BOUND = pow((NUMBER_OF_COUNTERS * numberOfLinks), (NUMBER_OF_COUNTERS * CONSTANT_C));
-}
-
 Graph::~Graph()
 {
     Node *actualNode = _head;
