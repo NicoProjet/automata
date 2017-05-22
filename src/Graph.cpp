@@ -535,7 +535,7 @@ Graph Graph::makeInvertGraph()
 
 void Graph::invertGraph()
 {
-    // infinite loop in linked chains
+    // infinite loop in nodes linked chain
     Node *actualNode = _head;
     Node *previousNode = nullptr;
     Node *origin, *target;
